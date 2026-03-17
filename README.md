@@ -18,4 +18,4 @@ Open the application and type `r` to select a log file from an Archipelago game.
 ## Current Limiations
 
 - Unable to combine multiple log files into one figure
-- 
+- Percentage graph is based on the current number of checks collected instead of the actual amount in the player's game
