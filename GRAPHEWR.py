@@ -61,38 +61,21 @@ def percent_array(size: int) -> list[float]:
         new_arr.append((i/size)*100)
     return new_arr
 
-def q_graph(players: dict[str, pd.DatetimeIndex]) -> None:
+def graph(players: dict[str, pd.DatetimeIndex], y_label: str, y_constructor: function) -> None:
     """
-    Create a line graph of amount of checks against time, categorized by player (each key in the dictionary).
+    Create a line graph of some statistic against time, categorized by player (each key in the dictionary).
     :param players: the dictionary of player names and times
+    :param y_label: string to be shown on the y-axis
+    :param y_constructor: function by which to plot the data on the y axis
     :return: None
     """
     plt.figure()
 
     for label, series in players.items():
-        plt.plot(series, series_array(len(series)), label=label, drawstyle='steps-post')
+        plt.plot(series, y_constructor(series), label=label, drawstyle='steps-post')
 
     plt.xlabel("Time")
-    plt.ylabel("Amount of Checks")
-    plt.legend()
-    plt.xticks(rotation=45)
-
-    plt.show()
-
-def p_graph(players: dict[str, pd.DatetimeIndex]) -> None:
-    """
-    Create a line graph of percentage of checks (relative to the total done) against time, categorized by player
-    (each key in the dictionary).
-    :param players: the dictionary of player names and times
-    :return: None
-    """
-    plt.figure()
-
-    for label, series in players.items():
-        plt.plot(series, percent_array(len(series)), label=label, drawstyle='steps-post')
-
-    plt.xlabel("Time")
-    plt.ylabel("Percent Complete")
+    plt.ylabel(y_label)
     plt.legend()
     plt.xticks(rotation=45)
 
@@ -125,8 +108,8 @@ def select_file() -> str:
 def main():
     debug = False
     players = None
-    print("-- 'f' to set a file to read from\n-- '1' for quantity graph\n-- '2' for percentage graph\n"
-          "-- 'h' to print this message again\n-- 'q' to exit")
+    help_string = "-- 'f' to set a file to read from\n-- '1' for quantity graph\n-- '2' for percentage graph\n-- 'h' to print this message again\n-- 'q' to exit"
+    print(help_string)
     while True:
         choice = input()
         if choice == "debug":
@@ -136,7 +119,7 @@ def main():
             else:
                 debug = True
                 print("Debug is now true")
-        elif choice == "f":
+        elif choice == "f": # Select file to read from
             try:
                 checks = read_file(select_file())
                 players = format_check_timeline(checks, debug)
@@ -148,20 +131,19 @@ def main():
                 print("File not found")
             except Exception as e:
                 print("Unexpected Error: ", e)
-        elif choice == "1":
+        elif choice == "1": # Quantity graph
             if players is None:
                 print("Set a file to read from first")
             else:
-                q_graph(players)
-        elif choice == "2":
+                graph(players, "Amount of Checks", lambda x: series_array(len(x)))
+        elif choice == "2": # Percentage graph
             if players is None:
                 print("Set a file to read from first")
             else:
-                p_graph(players)
-        elif choice == "h":
-            print("-- 'f' to set a file to read from\n-- '1' for quantity graph\n-- '2' for percentage graph\n"
-                  "-- 'h' to print this message again\n-- 'q' to exit")
-        elif choice == "q":
+                graph(players, "Percentage of Checks Completed", lambda x: percent_array(len(x)))
+        elif choice == "h": # Print help message
+            print(help_string)
+        elif choice == "q": # Quit
             break
         else:
             print("Invalid input")
