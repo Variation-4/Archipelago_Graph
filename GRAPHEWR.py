@@ -38,24 +38,24 @@ def format_check_timeline(log: list[list[str]], debug: bool = False) -> dict[str
             print(player + " got a check at " + time)
     return players
 
-def array(size: int, function: function) -> list[float]:
+def array(size: int, f) -> list[int | float]:
     """
-    Creates a list of the given size containing values in dependant on a given function.
+    Creates a list of the given size containing values dependent on a given function (f(index)).
     :param size: the size of the list
-    :param function: function by which to create the contents of the generated list
+    :param f: function by which to create the contents of the generated list
     :return: a list of values
     """
     new_arr = list()
     for i in range(1, size + 1):
-        new_arr.append(function(i))
+        new_arr.append(f(i))
     return new_arr
 
-def graph(players: dict[str, pd.DatetimeIndex], y_label: str, y_constructor: function) -> None:
+def graph(players: dict[str, pd.DatetimeIndex], y_label: str, y_constructor) -> None:
     """
     Create a line graph of some statistic against time, categorized by player (each key in the dictionary).
     :param players: the dictionary of player names and times
     :param y_label: string to be shown on the y-axis
-    :param y_constructor: function by which to plot the data on the y axis using the DateTimeIndex as a parameter
+    :param y_constructor: function by which to plot the data on the y-axis using the DateTimeIndex as a parameter
     :return: None
     """
     plt.figure()
@@ -76,7 +76,8 @@ def select_file() -> str:
     :return: The full path of the selected file as a string
     """
     root = tk.Tk()
-    root.withdraw()
+    root.attributes("-topmost", True)
+    root.attributes("-alpha", 0)
 
     path = filedialog.askopenfilename(
         title="Select a log file",
@@ -87,7 +88,7 @@ def select_file() -> str:
         )
     )
 
-    root.destroy
+    root.destroy()
 
     if path:
         return path
@@ -97,7 +98,8 @@ def select_file() -> str:
 def main():
     debug = False
     players = None
-    help_string = "-- 'f' to set a file to read from\n-- '1' for quantity graph\n-- '2' for percentage graph\n-- 'h' to print this message again\n-- 'q' to exit"
+    help_string = ("-- 'f' to set a file to read from\n-- '1' for quantity graph\n-- '2' for percentage graph\n"
+                   "-- 'h' to print this message again\n-- 'q' to exit")
     print(help_string)
     while True:
         choice = input()
@@ -129,7 +131,8 @@ def main():
             if players is None:
                 print("Set a file to read from first")
             else:
-                graph(players, "Percentage of Presently Completed Checks", lambda x: array(len(x), lambda y: (y/len(x) * 100)))
+                graph(players, "Percentage of Presently Completed Checks", lambda x: array(len(x),
+                                                                                           lambda y: (y/len(x) * 100)))
         elif choice == "h": # Print help message
             print(help_string)
         elif choice == "q": # Quit
