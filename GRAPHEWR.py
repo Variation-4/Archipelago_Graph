@@ -38,61 +38,33 @@ def format_check_timeline(log: list[list[str]], debug: bool = False) -> dict[str
             print(player + " got a check at " + time)
     return players
 
-def series_array(size: int) -> list[int]:
+def array(size: int, function: function) -> list[float]:
     """
-    Creates a list of the given size containing values 1 to size.
+    Creates a list of the given size containing values in dependant on a given function.
     :param size: the size of the list
-    :return: a list of values 1 to size, incrementing by 1
+    :param function: function by which to create the contents of the generated list
+    :return: a list of values
     """
     new_arr = list()
     for i in range(1, size + 1):
-        new_arr.append(i)
+        new_arr.append(function(i))
     return new_arr
 
-def percent_array(size: int) -> list[float]:
+def graph(players: dict[str, pd.DatetimeIndex], y_label: str, y_constructor: function) -> None:
     """
-    Creates a list of the given size containing percentages in proportion to the size (e.g. the first value would be
-    (1/size) * 100).
-    :param size: the size of the list
-    :return: a list of percentages in proportion to the size relative to the index
-    """
-    new_arr = list()
-    for i in range(1, size + 1):
-        new_arr.append((i/size)*100)
-    return new_arr
-
-def q_graph(players: dict[str, pd.DatetimeIndex]) -> None:
-    """
-    Create a line graph of amount of checks against time, categorized by player (each key in the dictionary).
+    Create a line graph of some statistic against time, categorized by player (each key in the dictionary).
     :param players: the dictionary of player names and times
+    :param y_label: string to be shown on the y-axis
+    :param y_constructor: function by which to plot the data on the y axis using the DateTimeIndex as a parameter
     :return: None
     """
     plt.figure()
 
     for label, series in players.items():
-        plt.plot(series, series_array(len(series)), label=label, drawstyle='steps-post')
+        plt.plot(series, y_constructor(series), label=label, drawstyle='steps-post')
 
     plt.xlabel("Time")
-    plt.ylabel("Amount of Checks")
-    plt.legend()
-    plt.xticks(rotation=45)
-
-    plt.show()
-
-def p_graph(players: dict[str, pd.DatetimeIndex]) -> None:
-    """
-    Create a line graph of percentage of checks (relative to the total done) against time, categorized by player
-    (each key in the dictionary).
-    :param players: the dictionary of player names and times
-    :return: None
-    """
-    plt.figure()
-
-    for label, series in players.items():
-        plt.plot(series, percent_array(len(series)), label=label, drawstyle='steps-post')
-
-    plt.xlabel("Time")
-    plt.ylabel("Percent Complete")
+    plt.ylabel(y_label)
     plt.legend()
     plt.xticks(rotation=45)
 
@@ -125,18 +97,18 @@ def select_file() -> str:
 def main():
     debug = False
     players = None
-    print("-- 'f' to set a file to read from\n-- '1' for quantity graph\n-- '2' for percentage graph\n"
-          "-- 'h' to print this message again\n-- 'q' to exit")
+    help_string = "-- 'f' to set a file to read from\n-- '1' for quantity graph\n-- '2' for percentage graph\n-- 'h' to print this message again\n-- 'q' to exit"
+    print(help_string)
     while True:
         choice = input()
-        if choice == "debug":
+        if choice == "debug": # Toggle debug
             if debug:
                 debug = False
                 print("Debug is now false")
             else:
                 debug = True
                 print("Debug is now true")
-        elif choice == "f":
+        elif choice == "f": # Select file to read from
             try:
                 checks = read_file(select_file())
                 players = format_check_timeline(checks, debug)
@@ -148,20 +120,19 @@ def main():
                 print("File not found")
             except Exception as e:
                 print("Unexpected Error: ", e)
-        elif choice == "1":
+        elif choice == "1": # Quantity graph
             if players is None:
                 print("Set a file to read from first")
             else:
-                q_graph(players)
-        elif choice == "2":
+                graph(players, "Amount of Checks", lambda x: array(len(x), lambda y: y))
+        elif choice == "2": # Percentage graph
             if players is None:
                 print("Set a file to read from first")
             else:
-                p_graph(players)
-        elif choice == "h":
-            print("-- 'f' to set a file to read from\n-- '1' for quantity graph\n-- '2' for percentage graph\n"
-                  "-- 'h' to print this message again\n-- 'q' to exit")
-        elif choice == "q":
+                graph(players, "Percentage of Presently Completed Checks", lambda x: array(len(x), lambda y: (y/len(x) * 100)))
+        elif choice == "h": # Print help message
+            print(help_string)
+        elif choice == "q": # Quit
             break
         else:
             print("Invalid input")
