@@ -129,7 +129,7 @@ def main():
             if players is None:
                 print("Set a file to read from first")
             else:
-                graph(players, "Percentage of Checks Completed", lambda x: array(len(x), lambda y: (y/len(x) * 100)))
+                graph(players, "Percentage of Presently Completed Checks", lambda x: array(len(x), lambda y: (y/len(x) * 100)))
         elif choice == "h": # Print help message
             print(help_string)
         elif choice == "q": # Quit
