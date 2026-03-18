@@ -101,7 +101,7 @@ def main():
     print(help_string)
     while True:
         choice = input()
-        if choice == "debug":
+        if choice == "debug": # Toggle debug
             if debug:
                 debug = False
                 print("Debug is now false")

@@ -14,6 +14,7 @@ Open the application and type `r` to select a log file from an Archipelago game.
 |`2`|Creates a figure graphing the percentage of checks each player collected relative to their current number of checks collected over time|
 |`h`|Prints the list of commands|
 |`q`|Exits the program|
+|`debug`|Toggles debug mode|
 
 ## Current Limiations
 
