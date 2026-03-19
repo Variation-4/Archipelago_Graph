@@ -105,6 +105,10 @@ def graph(logs: list[Log], y_label: str, y_constructor, debug: bool = False) -> 
     :param debug: print debug messages (default False)
     :return: None
     """
+    if len(logs) == 0:
+        print("Set a file to read from first")
+        return
+
     console_clear()
     print("Select files to graph (e.g. '0 1 3') (c to cancel):")
     for i in range(len(logs)):
@@ -277,16 +281,10 @@ def main():
             console_clear()
             file_menu(logs, choice[2:] == "full", debug)
         elif choice == "1": # Quantity graph
-            if len(logs) == 0:
-                print("Set a file to read from first")
-            else:
-                graph(logs, "Amount of Checks", lambda x: array(len(x), lambda y: y), debug)
+            graph(logs, "Amount of Checks", lambda x: array(len(x), lambda y: y), debug)
         elif choice == "2": # Percentage graph
-            if len(logs) == 0:
-                print("Set a file to read from first")
-            else:
                 graph(logs, "Percentage of Presently Completed Checks", lambda x: array(len(x),
-                                                                                    lambda y: (y/len(x) * 100)), debug)
+                                                                                        lambda y: (y/len(x) * 100)), debug)
         elif choice == "h": # Print help message
             print(HELP_STRING)
         elif choice == "q": # Quit
