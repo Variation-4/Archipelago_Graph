@@ -1,10 +1,16 @@
-name: Build for Windows
+name: Build standalone apps
 
-on: push
+on:
+  push:
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -12,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-verison: "3.14"
+          python-version: "3.14"
 
       - name: Install requirements
         run: pip install -r requirements.txt
@@ -23,4 +29,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
+          name: app-${{ matrix.os }}
           path: dist/*
