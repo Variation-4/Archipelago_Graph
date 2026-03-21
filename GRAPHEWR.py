@@ -5,8 +5,9 @@ import tkinter as tk
 from tkinter import filedialog
 
 #--CONSTANTS--##############################################
-HELP_STRING = ("-- 'f' to set a file to read from\n"
-               "  -'f full' to see full file path\n"
+HELP_STRING = ("-- 'f' to open log file mamager\n"
+               "  - 'f add' to add a log file\n"
+               "  - 'f full' to see full file path\n"
                "-- '1' for quantity graph\n"
                "-- '2' for percentage graph\n"
                "-- 'h' to print this message again\n"
@@ -105,31 +106,38 @@ def graph(logs: list[Log], y_label: str, y_constructor, debug: bool = False) -> 
     :param debug: print debug messages (default False)
     :return: None
     """
-    console_clear()
-    print("Select files to graph (e.g. '0 1 3') (c to cancel):")
-    for i in range(len(logs)):
-        print(i, "|", logs[i].filename)
-    while True:
-        invalid = False
-        selection = input()
-        if selection == "c":
-            print(HELP_STRING)
-            return
-        selection = selection.split(" ")
-        try:
-            for i in range(len(selection)):
-                selection[i] = int(selection[i])
-            for i in selection:
-                if i < 0 or i >= len(logs):
-                    print("Invalid selection")
-                    invalid = True
-            if not invalid:
-                break
-        except ValueError:
-            print("Invalid selection")
-    selection = set(selection)
+    if len(logs) == 0:
+        print("Set a file to read from first")
+        return
 
-    #if there is more than one selection, populate the players_relative entries for each log
+    if len(logs) == 1: # Skip selection if only one log is loaded
+        selection = {0}
+    else:
+        console_clear()
+        print("Select files to graph (e.g. '0 1 3') (c to cancel):")
+        for i in range(len(logs)):
+            print(i, "|", logs[i].filename)
+        while True:
+            invalid = False
+            selection = input()
+            if selection == "c":
+                show_help()
+                return
+            selection = selection.split(" ")
+            try:
+                for i in range(len(selection)):
+                    selection[i] = int(selection[i])
+                for i in selection:
+                    if i < 0 or i >= len(logs):
+                        print("Invalid selection")
+                        invalid = True
+                if not invalid:
+                    break
+            except ValueError:
+                print("Invalid selection")
+        selection = set(selection)
+
+    # If there is more than one selection, populate the players_relative entries for each log
     if len(selection) > 1:
         for i in selection:
             oldest = None
@@ -159,8 +167,7 @@ def graph(logs: list[Log], y_label: str, y_constructor, debug: bool = False) -> 
     plt.xticks(rotation=45)
 
     plt.show()
-    console_clear()
-    print(HELP_STRING)
+    show_help()
 
 def select_file() -> str:
     """
@@ -187,6 +194,35 @@ def select_file() -> str:
     else:
         return ""
 
+def add_file(logs: list[Log], debug: bool = False):
+    """
+    Opens a file dialog and adds selected log file to the specified Log list.
+    :param logs: the list of logs to add or remove Logs from
+    :param debug: print debug messages (default False)
+    :return: None
+    """
+    try:
+        file = select_file()
+        if debug:
+            print("Reading file:", file)
+            input("Press ENTER to continue")
+        checks = read_file(file)
+        players = format_check_timeline(checks, debug)
+
+        for player in players:
+            players[player] = pd.to_datetime(players[player])
+
+        filename = file.split("/")[-1]
+        log = Log(players, file, filename)
+        if debug:
+            print("Created Log:", log.filename, "(", log, ")")
+            input("Press ENTER to continue")
+        logs.append(log)
+    except FileNotFoundError:
+        print("File not found")
+    except Exception as e:
+        print("Unexpected Error: ", e)
+
 def file_menu(logs: list[Log], full: bool, debug: bool = False):
     """
     Instantiates an interface with which to select files (add or remove for consideration).
@@ -201,9 +237,11 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False):
         Prints the text interface for this menu
         :return: None
         """
+        console_clear()
         print(FILE_MENU_STRING)
         for i in range(len(logs)):
             print(i, "|", logs[i].filename, ("(" + logs[i].filepath + ")") if full else "")
+
 
     file_menu_message()
     while True:
@@ -214,7 +252,6 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False):
                 if debug:
                     print("Removed log:", rm_log.filename, "(", rm_log, ")")
                     input("Press ENTER to continue")
-                console_clear()
                 file_menu_message()
             except ValueError:
                 print("Invalid selection - not a number")
@@ -223,50 +260,36 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False):
             except Exception as e:
                 print("Unexpected error:", e)
         elif choiceF == "add":
-            try:
-                file = select_file()
-                if debug:
-                    print("Reading file:", file)
-                    input("Press ENTER to continue")
-                checks = read_file(file)
-                players = format_check_timeline(checks, debug)
-
-                for player in players:
-                    players[player] = pd.to_datetime(players[player])
-
-                filename = file.split("/")[-1]
-                log = Log(players, file, filename)
-                if debug:
-                    print("Created Log:", log.filename, "(", log, ")")
-                    input("Press ENTER to continue")
-                logs.append(log)
-                console_clear()
-                file_menu_message()
-            except FileNotFoundError:
-                print("File not found")
-            except Exception as e:
-                print("Unexpected Error: ", e)
+            add_file(logs, debug)
+            file_menu_message()
         elif choiceF == "q":
-            console_clear()
-            print(HELP_STRING)
+            show_help()
             break
         else:
             print("Invalid input")
 
 def console_clear() -> None:
     """
-    Clears the console window
+    Clears the console window.
     :return: None
     """
     os.system('cls' if os.name == 'nt' else 'clear')
 
+def show_help() -> None:
+    """
+    Clears the console window and show the help string.
+    :return: None
+    """
+    console_clear()
+    print(HELP_STRING)
+
 def main():
     debug = False
     logs = []
-    print(HELP_STRING)
+    show_help()
     while True:
-        choice = input()
-        if choice == "debug": # Toggle debug
+        choice = input().split(" ")
+        if choice[0] == "debug": # Toggle debug
             if debug:
                 debug = False
                 print("Debug is now false")
@@ -274,26 +297,24 @@ def main():
                 debug = True
                 print("Debug is now true")
         elif choice[0] == "f": # Select file to read from
-            console_clear()
-            file_menu(logs, choice[2:] == "full", debug)
-        elif choice == "1": # Quantity graph
-            if len(logs) == 0:
-                print("Set a file to read from first")
-            else:
-                graph(logs, "Amount of Checks", lambda x: array(len(x), lambda y: y), debug)
-        elif choice == "2": # Percentage graph
-            if len(logs) == 0:
-                print("Set a file to read from first")
-            else:
-                graph(logs, "Percentage of Presently Completed Checks", lambda x: array(len(x),
+            try:
+                if choice[1] == "add":
+                    add_file(logs, debug)
+                else:
+                    file_menu(logs, choice[1] == "full", debug)
+            except:
+                file_menu(logs, False, debug)
+        elif choice[0] == "1": # Quantity graph
+            graph(logs, "Amount of Checks", lambda x: array(len(x), lambda y: y), debug)
+        elif choice[0] == "2": # Percentage graph
+            graph(logs, "Percentage of Presently Completed Checks", lambda x: array(len(x),
                                                                                     lambda y: (y/len(x) * 100)), debug)
-        elif choice == "h": # Print help message
-            print(HELP_STRING)
-        elif choice == "q": # Quit
+        elif choice[0] == "h": # Print help message
+            show_help()
+        elif choice[0] == "q": # Quit
             break
         else:
             print("Invalid input")
 
 if __name__ == '__main__':
-    console_clear()
     main()
