@@ -194,7 +194,7 @@ def select_file() -> str:
     else:
         return ""
 
-def add_file(logs: list[Log], debug: bool = False):
+def add_file(logs: list[Log], debug: bool = False) -> None:
     """
     Opens a file dialog and adds selected log file to the specified Log list.
     :param logs: the list of logs to add or remove Logs from
@@ -223,7 +223,7 @@ def add_file(logs: list[Log], debug: bool = False):
     except Exception as e:
         print("Unexpected Error: ", e)
 
-def file_menu(logs: list[Log], full: bool, debug: bool = False):
+def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
     """
     Instantiates an interface with which to select files (add or remove for consideration).
     :param logs: the list of logs to add or remove Logs from
@@ -297,13 +297,10 @@ def main():
                 debug = True
                 print("Debug is now true")
         elif choice[0] == "f": # Select file to read from
-            try:
-                if choice[1] == "add":
-                    add_file(logs, debug)
-                else:
-                    file_menu(logs, choice[1] == "full", debug)
-            except:
-                file_menu(logs, False, debug)
+            if choice[1] == "add":
+                add_file(logs, debug)
+            else:
+                file_menu(logs, choice[1] == "full", debug)
         elif choice[0] == "1": # Quantity graph
             graph(logs, "Amount of Checks", lambda x: array(len(x), lambda y: y), debug)
         elif choice[0] == "2": # Percentage graph
