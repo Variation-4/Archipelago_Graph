@@ -297,10 +297,10 @@ def main():
                 debug = True
                 print("Debug is now true")
         elif choice[0] == "f": # Select file to read from
-            if choice[1] == "add":
+            if len(choice) > 2 and choice[1] == "add":
                 add_file(logs, debug)
             else:
-                file_menu(logs, choice[1] == "full", debug)
+                file_menu(logs, choice[1] == "full" if len(choice) > 1 else False, debug)
         elif choice[0] == "1": # Quantity graph
             graph(logs, "Amount of Checks", lambda x: array(len(x), lambda y: y), debug)
         elif choice[0] == "2": # Percentage graph
