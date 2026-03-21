@@ -297,7 +297,7 @@ def main():
                 debug = True
                 print("Debug is now true")
         elif choice[0] == "f": # Select file to read from
-            if len(choice) > 2 and choice[1] == "add":
+            if len(choice) > 1 and choice[1] == "add":
                 add_file(logs, debug)
             else:
                 file_menu(logs, choice[1] == "full" if len(choice) > 1 else False, debug)
