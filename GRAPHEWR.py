@@ -7,6 +7,7 @@ from tkinter import filedialog
 #--CONSTANTS--##############################################
 HELP_STRING = ("-- 'f' to open log file mamager\n"
                "  - 'f add' to add a log file\n"
+               "    - 'f add <path>' to add a log file manually\n"
                "  - 'f full' to see full file path\n"
                "-- '1' for quantity graph\n"
                "-- '2' for percentage graph\n"
@@ -15,6 +16,7 @@ HELP_STRING = ("-- 'f' to open log file mamager\n"
 FILE_MENU_STRING = ("Files selected:\n"
                     "remove [i] | remove the file from consideration\n"
                     "add        | add a new file\n"
+                    "add <path> | add the file at <path>\n"
                     "q          | close this menu\n")
 ############################################################
 
