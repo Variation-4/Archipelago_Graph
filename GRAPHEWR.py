@@ -202,6 +202,9 @@ def add_file(file: str, logs: list[Log], debug: bool = False) -> None:
     :param debug: print debug messages (default False)
     :return: None
     """
+    if not file:
+        file = select_file()
+
     try:
         if debug:
             print("Reading file:", file)
@@ -245,10 +248,10 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
 
     file_menu_message()
     while True:
-        choiceF = input()
-        if choiceF[:6] == "remove":
+        choice = input().split(" ")
+        if choice[0] == "remove":
             try:
-                rm_log = logs.pop(int(choiceF[7:]))
+                rm_log = logs.pop(int(choice[1]))
                 if debug:
                     print("Removed log:", rm_log.filename, "(", rm_log, ")")
                     input("Press ENTER to continue")
@@ -259,10 +262,13 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
                 print("Invalid selection - invalid index")
             except Exception as e:
                 print("Unexpected error:", e)
-        elif choiceF == "add":
-            add_file(select_file(), logs, debug)
+        elif choice[0] == "add":
+            if len(choice) > 1:
+                add_file(" ".join(choice[1:]), logs, debug)
+            else:
+                add_file(None, logs, debug)
             file_menu_message()
-        elif choiceF == "q":
+        elif choice[0] == "q":
             show_help()
             break
         else:
@@ -297,8 +303,11 @@ def main():
                 debug = True
                 print("Debug is now true")
         elif choice[0] == "f": # Select file to read from
-            if len(choice) > 1 and choice[1] == "add":
-                add_file(select_file(), logs, debug)
+            if len(choice) >= 2 and choice[1] == "add":
+                if len(choice) >= 3:
+                    add_file(" ".join(choice[2:]), logs, debug)
+                else:
+                    add_file(None, logs, debug)
             else:
                 file_menu(logs, choice[1] == "full" if len(choice) > 1 else False, debug)
         elif choice[0] == "1": # Quantity graph
