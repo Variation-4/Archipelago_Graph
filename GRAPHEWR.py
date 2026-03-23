@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 #--CONSTANTS--##############################################
-HELP_STRING = ("-- 'f' to open log file mamager\n"
+HELP_STRING = ("-- 'f' to open log file manager\n"
                "  - 'f add' to add a log file\n"
                "    - 'f add <path>' to add a log file manually\n"
                "  - 'f full' to see full file path\n"
@@ -196,7 +196,7 @@ def select_file() -> str:
     else:
         return ""
 
-def add_file(file: str, logs: list[Log], debug: bool = False) -> None:
+def add_file(file: str | None, logs: list[Log], debug: bool = False) -> None:
     """
     Opens a file dialog and adds selected log file to the specified Log list.
     :param file: path of file to be added to logs
