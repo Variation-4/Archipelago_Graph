@@ -283,7 +283,7 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
         else:
             print("Invalid input")
 
-def export(log_i: int, path: str, logs: list[Log]) -> None:
+def export(log_i: int, path: str | None, logs: list[Log]) -> None:
     """
     Exports the data from a log into a .csv file.
     :return: None
