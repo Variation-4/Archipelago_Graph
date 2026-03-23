@@ -34,6 +34,7 @@ class Log:
         :param players: dictionary of players with their times in which they completed a check
         :param filepath: the filepath of the log
         :param filename: the name of the file
+        :param timestamps: ordered list of all check timestamps in the log file
         """
         self.players = players
         self.players_relative = dict() #possibly somehow add documentation regarding this
@@ -287,13 +288,12 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
 
 def export(log_i: int, path: str | None, logs: list[Log]) -> None:
     """
-    Exports the data from a log into a .csv file. Currently only supports exporing a single log.
+    Exports the data from a log into a .csv file. Only supports exporing a single log.
     :param log_i: Index of the log to export
     :param path: Path of the exported file. Set None to open a file dialog.
     :param logs: Master list of logs to reference from
     :return: None
     """
-    # Exporting multiple logs at the same time is not supported and would require merging timestamp lists
 
     if len(logs) == 0:
         print("Set a file to read from first")
@@ -317,10 +317,14 @@ def export(log_i: int, path: str | None, logs: list[Log]) -> None:
 
     try:
         with open(path, "w") as file:
-            content = "Timestamps, "
+            content = "Timestamps, " # Content starts with the first column "Timestamps"
 
+            # Exporting is limited to one log file at a time because of how timestamps are stored.
+            # Multiple exports could be merged later in external software.
             log = logs[log_i]
 
+            # Tracks location count for each player individually during content generation so players
+            # can have data points even when they don't contribute
             current_checks = dict()
 
             for player, series in log.players.items():
@@ -329,9 +333,11 @@ def export(log_i: int, path: str | None, logs: list[Log]) -> None:
 
             content += "\n"
 
-            for timestamp in log.timestamps:
-                content += timestamp.strftime("%Y-%m-%d %X.%f") + ", "
+            for timestamp in log.timestamps: # Create a new line for each timestamp chronologically
+                content += timestamp.strftime("%Y-%m-%d %X.%f") + ", " # Formats time for easy Excel importing; Different from log format
                 for player, series in log.players.items():
+                    # Checks if given timestamp is a timestamp where that player checked a location.
+                    # Could cause issues if 2 players check a location on the same milisecond.
                     if timestamp in series:
                         current_checks[player] += 1
                     content += str(current_checks[player]) + ", "
