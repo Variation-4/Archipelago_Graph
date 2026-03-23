@@ -60,10 +60,11 @@ def read_file(filename: str) -> list[list[str]]:
 def format_check_timeline(log: list[list[str]], debug: bool = False) -> Tuple[dict[str, pd.Series], list[pd.Timestamp]]:
     """
     Takes a list of lines (already split) from the log where someone is getting a check and formats them into a
-    dictionary where the key is the player name and the value is a list of times when the player got a check.
+    dictionary where the key is the player name and the value is a list of times when the player got a check. Also returns
+    an ordered list of every timestamp that appears in the list.
     :param log: list of lines associated with an individual getting a check in a list
     :param debug: print debug messages (default False)
-    :return: dictionary where keys are player names and values are the times when the player got a check
+    :return: dictionary where keys are player names and values are the times when the player got a check and list of every timestamp
     """
     players = dict()
     timestamps = []
@@ -73,7 +74,7 @@ def format_check_timeline(log: list[list[str]], debug: bool = False) -> Tuple[di
         if not (player in players):
             players[player] = []
         players[player].append(time)
-        timestamps.append(pd.to_datetime(time))
+        timestamps.append(pd.to_datetime(time), format="%Y-%m-%d %H:%M:%S,%f")
         if debug:
             print(player + " got a check at " + time)
     
@@ -288,6 +289,8 @@ def export(log_i: int, path: str | None, logs: list[Log]) -> None:
     """
     Exports the data from a log into a .csv file. Currently only supports exporing a single log.
     :param log_i: Index of the log to export
+    :param path: Path of the exported file. Set None to open a file dialog.
+    :param logs: Master list of logs to reference from
     :return: None
     """
     # Exporting multiple logs at the same time is not supported and would require merging timestamp lists
