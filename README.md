@@ -24,6 +24,9 @@ Open the application and select log files from an Archipelago game using `f` or 
 |`f add <path>`|Adds the log file at the specified path without opening the file manager<br>Identical to `add <path>` in the file manager
 |`1`|Creates a figure graphing the amount of checks each player collected over time|
 |`2`|Creates a figure graphing the percentage of checks each player collected relative to their current number of checks collected over time|
+|`e`|Exports data from the first log as a `.csv` file|
+|`e [i]`|Exports data from log `i` as a `.csv` file|
+|`e [i] <path>`|Exports data from log `i` to a specified location|
 |`h`|Prints the list of commands|
 |`q`|Exits the program|
 |`debug`|Toggles debug mode|
