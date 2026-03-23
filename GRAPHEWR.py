@@ -11,8 +11,9 @@ HELP_STRING = ("-- 'f' to open log file mamager\n"
                "  - 'f full' to see full file path\n"
                "-- '1' for quantity graph\n"
                "-- '2' for percentage graph\n"
-               "-- 'e' to export data to .csv\n"
-               "  - 'e <path>' to export data to a specified location\n"
+               "-- 'e' to export data from the first log to .csv\n"
+               "  - `e [i]` to export data from log i to .csv\n"
+               "  - 'e [i] <path>' to export data from log i to a specified location\n"
                "-- 'h' to print this message again\n"
                "-- 'q' to exit")
 FILE_MENU_STRING = ("Files selected:\n"
@@ -282,7 +283,7 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
         else:
             print("Invalid input")
 
-def export(path: str, logs: list[Log]) -> None:
+def export(log_i: int, path: str, logs: list[Log]) -> None:
     """
     Exports the data from a log into a .csv file.
     :return: None
@@ -305,11 +306,13 @@ def export(path: str, logs: list[Log]) -> None:
             )
         )
 
+        root.destroy()
+
     try:
         with open(path, "w") as file:
             content = "Timestamps, "
 
-            log = logs[0] # Currently only exports first log
+            log = logs[log_i]
 
             current_checks = dict()
 
@@ -328,6 +331,7 @@ def export(path: str, logs: list[Log]) -> None:
                 content += "\n"
 
             file.write(content)
+            print(f"Successfully wrote from log {log.filepath} to {path}")
     except FileNotFoundError:
         print("File not found")
     except Exception as e:
@@ -376,9 +380,12 @@ def main():
                                                                                     lambda y: (y/len(x) * 100)), debug)
         elif choice[0] == "e":
             if len(choice) >= 2:
-                export(" ".join(choice[1:]), logs)
+                if len(choice) >= 3:
+                    export(int(choice[1]), " ".join(choice[2:]), logs)
+                else:
+                    export(int(choice[1]), None, logs)
             else:
-                export(None, logs)
+                export(0, None, logs)
         elif choice[0] == "h": # Print help message
             show_help()
         elif choice[0] == "q": # Quit
