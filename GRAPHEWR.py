@@ -11,6 +11,8 @@ HELP_STRING = ("-- 'f' to open log file mamager\n"
                "  - 'f full' to see full file path\n"
                "-- '1' for quantity graph\n"
                "-- '2' for percentage graph\n"
+               "-- 'e' to export data to .csv\n"
+               "  - 'e <path>' to export data to a specified location\n"
                "-- 'h' to print this message again\n"
                "-- 'q' to exit")
 FILE_MENU_STRING = ("Files selected:\n"
@@ -203,26 +205,26 @@ def select_file() -> str:
     else:
         return ""
 
-def add_file(file: str, logs: list[Log], debug: bool = False) -> None:
+def add_file(path: str, logs: list[Log], debug: bool = False) -> None:
     """
     Opens a file dialog and adds selected log file to the specified Log list.
-    :param file: path of file to be added to logs
+    :param path: path of file to be added to logs
     :param logs: the list of logs to add or remove Logs from
     :param debug: print debug messages (default False)
     :return: None
     """
-    if not file:
-        file = select_file()
+    if not path:
+        path = select_file()
 
     try:
         if debug:
-            print("Reading file:", file)
+            print("Reading file:", path)
             input("Press ENTER to continue")
-        checks = read_file(file)
+        checks = read_file(path)
         players, timestamps = format_check_timeline(checks, debug)
 
-        filename = file.split("/")[-1]
-        log = Log(players, file, filename, timestamps)
+        filename = path.split("/")[-1]
+        log = Log(players, path, filename, timestamps)
         if debug:
             print("Created Log:", log.filename, "(", log, ")")
             input("Press ENTER to continue")
@@ -280,33 +282,56 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
         else:
             print("Invalid input")
 
-def export(logs: list[Log]) -> None:
+def export(path: str, logs: list[Log]) -> None:
+    """
+    Exports the data from a log into a .csv file.
+    :return: None
+    """
     if len(logs) == 0:
         print("Set a file to read from first")
         return
     
-    with open("./output/export.csv", "w") as file:
-        content = ""
+    if not path: # Opens file dialog if path not specified
+        root = tk.Tk()
+        root.attributes("-topmost", True)
+        root.attributes("-alpha", 0)
 
-        log = logs[0]
+        path = filedialog.asksaveasfilename(
+            title="Export to...",
+            initialdir=".",
+            filetypes=(
+                ("Comma Separated Values", "*.csv"),
+                ("All files", "*")
+            )
+        )
 
-        current_checks = dict()
+    try:
+        with open(path, "w") as file:
+            content = "Timestamps, "
 
-        for player, series in log.players.items():
-            current_checks[player] = 0
-            content += player + ", "
+            log = logs[0] # Currently only exports first log
 
-        content += "\n"
+            current_checks = dict()
 
-        for timestamp in log.timestamps:
-            content += timestamp.strftime("%Y-%m-%d %X") + ", "
             for player, series in log.players.items():
-                if timestamp in series:
-                    current_checks[player] += 1
-                content += str(current_checks[player]) + ", "
+                current_checks[player] = 0
+                content += player + ", "
+
             content += "\n"
 
-        file.write(content)
+            for timestamp in log.timestamps:
+                content += timestamp.strftime("%Y-%m-%d %X") + ", "
+                for player, series in log.players.items():
+                    if timestamp in series:
+                        current_checks[player] += 1
+                    content += str(current_checks[player]) + ", "
+                content += "\n"
+
+            file.write(content)
+    except FileNotFoundError:
+        print("File not found")
+    except Exception as e:
+        print("Unexpected Error: ", e)
 
 def console_clear() -> None:
     """
@@ -350,7 +375,10 @@ def main():
             graph(logs, "Percentage of Presently Completed Checks", lambda x: array(len(x),
                                                                                     lambda y: (y/len(x) * 100)), debug)
         elif choice[0] == "e":
-            export(logs)
+            if len(choice) >= 2:
+                export(" ".join(choice[1:]), logs)
+            else:
+                export(None, logs)
         elif choice[0] == "h": # Print help message
             show_help()
         elif choice[0] == "q": # Quit
