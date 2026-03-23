@@ -13,7 +13,7 @@ HELP_STRING = ("-- 'f' to open log file manager\n"
                "-- '1' for quantity graph\n"
                "-- '2' for percentage graph\n"
                "-- 'e' to export data from the first log to .csv\n"
-               "  - `e [i]` to export data from log i to .csv\n"
+               "  - 'e [i]' to export data from log i to .csv\n"
                "  - 'e [i] <path>' to export data from log i to a specified location\n"
                "-- 'h' to print this message again\n"
                "-- 'q' to exit")
@@ -75,7 +75,7 @@ def format_check_timeline(log: list[list[str]], debug: bool = False) -> Tuple[di
         if not (player in players):
             players[player] = []
         players[player].append(time)
-        timestamps.append(pd.to_datetime(time), format="%Y-%m-%d %H:%M:%S,%f")
+        timestamps.append(pd.to_datetime(time, format="%Y-%m-%d %H:%M:%S,%f"))
         if debug:
             print(player + " got a check at " + time)
     
@@ -288,7 +288,7 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
 
 def export(log_i: int, path: str | None, logs: list[Log]) -> None:
     """
-    Exports the data from a log into a .csv file. Only supports exporing a single log.
+    Exports the data from a log into a .csv file. Only supports exploring a single log.
     :param log_i: Index of the log to export
     :param path: Path of the exported file. Set None to open a file dialog.
     :param logs: Master list of logs to reference from
@@ -312,6 +312,9 @@ def export(log_i: int, path: str | None, logs: list[Log]) -> None:
                 ("All files", "*")
             )
         )
+
+        if path[-4:] != ".csv":
+            path += ".csv"
 
         root.destroy()
 
@@ -337,7 +340,7 @@ def export(log_i: int, path: str | None, logs: list[Log]) -> None:
                 content += timestamp.strftime("%Y-%m-%d %X.%f") + ", " # Formats time for easy Excel importing; Different from log format
                 for player, series in log.players.items():
                     # Checks if given timestamp is a timestamp where that player checked a location.
-                    # Could cause issues if 2 players check a location on the same milisecond.
+                    # Could cause issues if 2 players check a location on the same millisecond.
                     if timestamp in series:
                         current_checks[player] += 1
                     content += str(current_checks[player]) + ", "
