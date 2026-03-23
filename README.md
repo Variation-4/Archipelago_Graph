@@ -20,7 +20,8 @@ Open the application and select log files from an Archipelago game using `f` or 
 |-|-|
 |`f`|Opens the log file manager|
 |`f full`|Opens the log file manager with full path names to each log file
-|`f add`|Add a log file directly without opening the file manager<br>Identical to `add` in the file manager
+|`f add`|Add a log file without opening the file manager<br>Identical to `add` in the file manager
+|`f add <path>`|Adds the log file at the specified path without opening the file manager<br>Identical to `add <path>` in the file manager
 |`1`|Creates a figure graphing the amount of checks each player collected over time|
 |`2`|Creates a figure graphing the percentage of checks each player collected relative to their current number of checks collected over time|
 |`h`|Prints the list of commands|
@@ -32,6 +33,7 @@ Open the application and select log files from an Archipelago game using `f` or 
 |-|-|
 |`remove [i]`|Removes the log file, where `[i]` is the number corresponding to the file to be removed|
 |`add`|Opens a file dialog to choose a log file to be added|
+|`add <path>`|Adds the log file at the specified path|
 |`q`|Quit the file manager and return to the main program|
 
 ## Current Limiations

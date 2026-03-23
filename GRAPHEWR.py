@@ -7,6 +7,7 @@ from tkinter import filedialog
 #--CONSTANTS--##############################################
 HELP_STRING = ("-- 'f' to open log file mamager\n"
                "  - 'f add' to add a log file\n"
+               "    - 'f add <path>' to add a log file manually\n"
                "  - 'f full' to see full file path\n"
                "-- '1' for quantity graph\n"
                "-- '2' for percentage graph\n"
@@ -15,6 +16,7 @@ HELP_STRING = ("-- 'f' to open log file mamager\n"
 FILE_MENU_STRING = ("Files selected:\n"
                     "remove [i] | remove the file from consideration\n"
                     "add        | add a new file\n"
+                    "add <path> | add the file at <path>\n"
                     "q          | close this menu\n")
 ############################################################
 
@@ -194,15 +196,18 @@ def select_file() -> str:
     else:
         return ""
 
-def add_file(logs: list[Log], debug: bool = False) -> None:
+def add_file(file: str, logs: list[Log], debug: bool = False) -> None:
     """
     Opens a file dialog and adds selected log file to the specified Log list.
+    :param file: path of file to be added to logs
     :param logs: the list of logs to add or remove Logs from
     :param debug: print debug messages (default False)
     :return: None
     """
-    try:
+    if not file:
         file = select_file()
+
+    try:
         if debug:
             print("Reading file:", file)
             input("Press ENTER to continue")
@@ -245,10 +250,10 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
 
     file_menu_message()
     while True:
-        choiceF = input()
-        if choiceF[:6] == "remove":
+        choice = input().split(" ")
+        if choice[0] == "remove":
             try:
-                rm_log = logs.pop(int(choiceF[7:]))
+                rm_log = logs.pop(int(choice[1]))
                 if debug:
                     print("Removed log:", rm_log.filename, "(", rm_log, ")")
                     input("Press ENTER to continue")
@@ -259,10 +264,13 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
                 print("Invalid selection - invalid index")
             except Exception as e:
                 print("Unexpected error:", e)
-        elif choiceF == "add":
-            add_file(logs, debug)
+        elif choice[0] == "add":
+            if len(choice) > 1:
+                add_file(" ".join(choice[1:]), logs, debug)
+            else:
+                add_file(None, logs, debug)
             file_menu_message()
-        elif choiceF == "q":
+        elif choice[0] == "q":
             show_help()
             break
         else:
@@ -297,8 +305,11 @@ def main():
                 debug = True
                 print("Debug is now true")
         elif choice[0] == "f": # Select file to read from
-            if len(choice) > 1 and choice[1] == "add":
-                add_file(logs, debug)
+            if len(choice) >= 2 and choice[1] == "add":
+                if len(choice) >= 3:
+                    add_file(" ".join(choice[2:]), logs, debug)
+                else:
+                    add_file(None, logs, debug)
             else:
                 file_menu(logs, choice[1] == "full" if len(choice) > 1 else False, debug)
         elif choice[0] == "1": # Quantity graph
