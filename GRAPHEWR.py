@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import tkinter as tk
 from tkinter import filedialog
+from typing import Tuple
 
 #--CONSTANTS--##############################################
 HELP_STRING = ("-- 'f' to open log file manager\n"
@@ -56,7 +57,7 @@ def read_file(filename: str) -> list[list[str]]:
                 lines.append(line)
     return lines
 
-def format_check_timeline(log: list[list[str]], debug: bool = False) -> dict[str, pd.Series]:
+def format_check_timeline(log: list[list[str]], debug: bool = False) -> Tuple[dict[str, pd.Series], list[pd.Timestamp]]:
     """
     Takes a list of lines (already split) from the log where someone is getting a check and formats them into a
     dictionary where the key is the player name and the value is a list of times when the player got a check.
@@ -67,7 +68,7 @@ def format_check_timeline(log: list[list[str]], debug: bool = False) -> dict[str
     players = dict()
     timestamps = []
     for check in log:
-        time = check[0][1:] + " " + check[1][:-6]
+        time = check[0][1:] + " " + check[1][:-2]
         player = check[4]
         if not (player in players):
             players[player] = []
@@ -77,7 +78,7 @@ def format_check_timeline(log: list[list[str]], debug: bool = False) -> dict[str
             print(player + " got a check at " + time)
     
     for player in players:
-            players[player] = pd.to_datetime(players[player])
+            players[player] = pd.to_datetime(players[player], format="%Y-%m-%d %H:%M:%S,%f")
 
     return players, timestamps
 
@@ -206,7 +207,7 @@ def select_file() -> str:
     else:
         return ""
 
-def add_file(file: str | None, logs: list[Log], debug: bool = False) -> None:
+def add_file(path: str | None, logs: list[Log], debug: bool = False) -> None:
     """
     Opens a file dialog and adds selected log file to the specified Log list.
     :param path: path of file to be added to logs
@@ -285,9 +286,12 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
 
 def export(log_i: int, path: str | None, logs: list[Log]) -> None:
     """
-    Exports the data from a log into a .csv file.
+    Exports the data from a log into a .csv file. Currently only supports exporing a single log.
+    :param log_i: Index of the log to export
     :return: None
     """
+    # Exporting multiple logs at the same time is not supported and would require merging timestamp lists
+
     if len(logs) == 0:
         print("Set a file to read from first")
         return
@@ -323,7 +327,7 @@ def export(log_i: int, path: str | None, logs: list[Log]) -> None:
             content += "\n"
 
             for timestamp in log.timestamps:
-                content += timestamp.strftime("%Y-%m-%d %X") + ", "
+                content += timestamp.strftime("%Y-%m-%d %X.%f") + ", "
                 for player, series in log.players.items():
                     if timestamp in series:
                         current_checks[player] += 1
