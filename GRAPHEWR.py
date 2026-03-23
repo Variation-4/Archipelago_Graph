@@ -24,7 +24,7 @@ class Log:
     """
     Class to represent a log file
     """
-    def __init__(self, players: dict[str, pd.Series], filepath: str, filename: str):
+    def __init__(self, players: dict[str, pd.Series], filepath: str, filename: str, timestamps: list[pd.Timestamp]):
         """
         Constructor for the Log class
         :param players: dictionary of players with their times in which they completed a check
@@ -35,6 +35,7 @@ class Log:
         self.players_relative = dict() #possibly somehow add documentation regarding this
         self.filepath = filepath
         self.filename = filename
+        self.timestamps = timestamps
 
 def read_file(filename: str) -> list[list[str]]:
     """
@@ -61,15 +62,21 @@ def format_check_timeline(log: list[list[str]], debug: bool = False) -> dict[str
     :return: dictionary where keys are player names and values are the times when the player got a check
     """
     players = dict()
+    timestamps = []
     for check in log:
         time = check[0][1:] + " " + check[1][:-6]
         player = check[4]
         if not (player in players):
             players[player] = []
         players[player].append(time)
+        timestamps.append(pd.to_datetime(time))
         if debug:
             print(player + " got a check at " + time)
-    return players
+    
+    for player in players:
+            players[player] = pd.to_datetime(players[player])
+
+    return players, timestamps
 
 def array(size: int, f) -> list[int | float]:
     """
@@ -212,13 +219,10 @@ def add_file(file: str, logs: list[Log], debug: bool = False) -> None:
             print("Reading file:", file)
             input("Press ENTER to continue")
         checks = read_file(file)
-        players = format_check_timeline(checks, debug)
-
-        for player in players:
-            players[player] = pd.to_datetime(players[player])
+        players, timestamps = format_check_timeline(checks, debug)
 
         filename = file.split("/")[-1]
-        log = Log(players, file, filename)
+        log = Log(players, file, filename, timestamps)
         if debug:
             print("Created Log:", log.filename, "(", log, ")")
             input("Press ENTER to continue")
@@ -276,6 +280,34 @@ def file_menu(logs: list[Log], full: bool, debug: bool = False) -> None:
         else:
             print("Invalid input")
 
+def export(logs: list[Log]) -> None:
+    if len(logs) == 0:
+        print("Set a file to read from first")
+        return
+    
+    with open("./output/export.csv", "w") as file:
+        content = ""
+
+        log = logs[0]
+
+        current_checks = dict()
+
+        for player, series in log.players.items():
+            current_checks[player] = 0
+            content += player + ", "
+
+        content += "\n"
+
+        for timestamp in log.timestamps:
+            content += timestamp.strftime("%Y-%m-%d %X") + ", "
+            for player, series in log.players.items():
+                if timestamp in series:
+                    current_checks[player] += 1
+                content += str(current_checks[player]) + ", "
+            content += "\n"
+
+        file.write(content)
+
 def console_clear() -> None:
     """
     Clears the console window.
@@ -317,6 +349,8 @@ def main():
         elif choice[0] == "2": # Percentage graph
             graph(logs, "Percentage of Presently Completed Checks", lambda x: array(len(x),
                                                                                     lambda y: (y/len(x) * 100)), debug)
+        elif choice[0] == "e":
+            export(logs)
         elif choice[0] == "h": # Print help message
             show_help()
         elif choice[0] == "q": # Quit
