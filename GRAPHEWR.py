@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import tkinter as tk
 from tkinter import filedialog
-from typing import Tuple
 
 #--CONSTANTS--##############################################
 HELP_STRING = ("-- 'f' to open log file manager\n"
@@ -58,7 +57,7 @@ def read_file(filename: str) -> list[list[str]]:
                 lines.append(line)
     return lines
 
-def format_check_timeline(log: list[list[str]], debug: bool = False) -> Tuple[dict[str, pd.Series], list[pd.Timestamp]]:
+def format_check_timeline(log: list[list[str]], debug: bool = False) -> tuple[dict[str, pd.Series], list[pd.Timestamp]]:
     """
     Takes a list of lines (already split) from the log where someone is getting a check and formats them into a
     dictionary where the key is the player name and the value is a list of times when the player got a check. Also returns
