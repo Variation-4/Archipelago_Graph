@@ -329,7 +329,7 @@ def export(log_i: int, path: str | None, logs: list[Log]) -> None:
             # can have data points even when they don't contribute
             current_checks = dict()
 
-            for player, series in log.players.items():
+            for player in log.players:
                 current_checks[player] = 0
                 content += player + ", "
 
